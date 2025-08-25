@@ -1,0 +1,8 @@
+# melos_managed_dependency_overrides: dart_firebase_admin,firedart
+dependency_overrides:
+  dart_firebase_admin:
+    path: ../dart_firebase_admin
+  firedart:
+    path: ../firedart-master
+  pointycastle: ^4.0.0
+  dart_jsonwebtoken: ^3.2.0

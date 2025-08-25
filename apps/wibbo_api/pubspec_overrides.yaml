@@ -1,0 +1,8 @@
+# melos_managed_dependency_overrides: dart_firebase_admin,dart_firebase_notification,firedart
+dependency_overrides:
+  dart_firebase_admin:
+    path: ../../packages/dart_firebase_admin
+  dart_firebase_notification:
+    path: ../../packages/dart_firebase_notification
+  firedart:
+    path: ../../packages/firedart-master

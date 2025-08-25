@@ -1,0 +1,14 @@
+name: wibbo
+repository: https://github.com/your-username/wibbo
+environment:
+  sdk: ^3.8.0
+packages:
+  - apps/**
+  - packages/**
+
+workspace:
+  - packages/helper
+  - packages/client_package
+  - packages/server_package
+
+

@@ -1,0 +1,20 @@
+name: firedart
+description: A dart-native implementation of the Firebase Auth and Firestore SDKs.
+version: 0.9.8
+homepage: https://github.com/cachapa/firedart
+
+environment:
+  sdk: '>=2.18.0 <4.0.0'
+
+dependencies:
+  http: '>=0.13.0 <2.0.0'
+  grpc: ^3.2.4
+  protobuf: ^3.1.0
+  fixnum: ^1.1.0
+
+dev_dependencies:
+  lints: any
+  test: any
+
+  # Create custom auth token for testing
+  firebase_admin: ^0.2.0
