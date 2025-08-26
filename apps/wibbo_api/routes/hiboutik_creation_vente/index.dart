@@ -17,7 +17,7 @@ import 'package:wibbo_api/usecase/creer_vente_hiboutik_usecase.dart';
 FutureOr<Response> onRequest(RequestContext context) async {
   LoggerService.info('Requête reçue sur /hiboutik_creation_vente', 'Route');
   LoggerService.debug('Méthode HTTP: ${context.request.method}', 'Route');
-  
+
   switch (context.request.method) {
     case HttpMethod.get:
     case HttpMethod.post:
@@ -27,34 +27,51 @@ FutureOr<Response> onRequest(RequestContext context) async {
     case HttpMethod.options:
     case HttpMethod.patch:
     case HttpMethod.put:
-      LoggerService.warning('Méthode HTTP non autorisée: ${context.request.method}', 'Route');
+      LoggerService.warning(
+        'Méthode HTTP non autorisée: ${context.request.method}',
+        'Route',
+      );
       return Response(statusCode: HttpStatus.methodNotAllowed);
   }
 }
 
 Future<Response> _post(RequestContext context) async {
-  LoggerService.info('Début du traitement POST /hiboutik_creation_vente', 'Route');
+  LoggerService.info(
+    'Début du traitement POST /hiboutik_creation_vente',
+    'Route',
+  );
   final firestore = await context.readAsync<Firestore>();
 
   try {
     // Log du body brut avant parsing JSON
     final rawBody = await context.request.body();
-    LoggerService.debug('Body brut reçu: ${rawBody.length} caractères', 'Route');
-    
+    LoggerService.debug(
+      'Body brut reçu: ${rawBody.length} caractères',
+      'Route',
+    );
+
     // Tentative de parsing JSON avec gestion d'erreur améliorée
     Map<String, dynamic> body;
     try {
       body = (await context.request.json()) as Map<String, dynamic>;
       LoggerService.debug('JSON parsé avec succès', 'Route');
     } catch (jsonError) {
-      LoggerService.warning('Erreur parsing JSON, tentative de normalisation', 'Route');
+      LoggerService.warning(
+        'Erreur parsing JSON, tentative de normalisation',
+        'Route',
+      );
       // Tentative de normalisation des caractères spéciaux
       try {
         final normalizedBody = normalizeSpecialCharacters(rawBody);
         body = json.decode(normalizedBody) as Map<String, dynamic>;
         LoggerService.info('JSON normalisé avec succès', 'Route');
       } catch (normalizeError) {
-        LoggerService.error('Échec de normalisation JSON', normalizeError, null, 'Route');
+        LoggerService.error(
+          'Échec de normalisation JSON',
+          normalizeError,
+          null,
+          'Route',
+        );
         return Response(
           statusCode: HttpStatus.badRequest,
           body: json.encode({
@@ -73,13 +90,39 @@ Future<Response> _post(RequestContext context) async {
     final listeItemsMapDynamic = body['items'] as List<dynamic>;
     final listeItemsMap =
         listeItemsMapDynamic.map((e) => e as Map<String, dynamic>).toList();
-    
-    LoggerService.info('Items extraits du body: ${listeItemsMap.length} items', 'Route');
 
-    const uidCompteUtilisateur = 'cEIyZGLZKo2EtN3GqSz3';
-    LoggerService.debug('UID utilisateur utilisé: $uidCompteUtilisateur', 'Route');
+    LoggerService.info(
+      'Items extraits du body: ${listeItemsMap.length} items',
+      'Route',
+    );
 
-    LoggerService.info('Exécution du usecase CreerVenteHiboutikUsecase', 'Route');
+    // Récupération du paramètre utilisateur depuis l'URL
+    // url/end_point?utilisateur=uid123
+    final uidCompteUtilisateur =
+        context.request.uri.queryParameters['utilisateur'];
+    if (uidCompteUtilisateur == null || uidCompteUtilisateur.isEmpty) {
+      LoggerService.warning(
+        "Paramètre utilisateur manquant dans l'URL",
+        'Route',
+      );
+      return Response(
+        statusCode: HttpStatus.badRequest,
+        body: json.encode({
+          'error': 'Paramètre utilisateur manquant',
+          'message':
+              "Le paramètre utilisateur est requis dans l'URL (ex: ?utilisateur=uid123)",
+        }),
+      );
+    }
+    LoggerService.debug(
+      "UID utilisateur récupéré depuis l'URL: $uidCompteUtilisateur",
+      'Route',
+    );
+
+    LoggerService.info(
+      'Exécution du usecase CreerVenteHiboutikUsecase',
+      'Route',
+    );
     await CreerVenteHiboutikUsecase(
       compteUtilisateurRepository: FirestoreCompteUtilisateurRepository(
         firestore: firestore,
@@ -93,7 +136,10 @@ Future<Response> _post(RequestContext context) async {
         uidCompteUtilisateur: uidCompteUtilisateur,
       ),
     );
-    LoggerService.info('Usecase CreerVenteHiboutikUsecase exécuté avec succès', 'Route');
+    LoggerService.info(
+      'Usecase CreerVenteHiboutikUsecase exécuté avec succès',
+      'Route',
+    );
 
     LoggerService.info('Réponse de succès envoyée - Status: 202', 'Route');
     return Response(
@@ -105,8 +151,13 @@ Future<Response> _post(RequestContext context) async {
       }),
     );
   } catch (e) {
-    LoggerService.error('Erreur lors du traitement de la requête', e, null, 'Route');
-    
+    LoggerService.error(
+      'Erreur lors du traitement de la requête',
+      e,
+      null,
+      'Route',
+    );
+
     if (e is FormatException) {
       LoggerService.warning('Erreur de format détectée', 'Route');
       return Response(

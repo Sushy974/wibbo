@@ -15,28 +15,46 @@ class CreerVenteHiboutikUsecase {
   final CompteUtilisateurRepository _compteUtilisateurRepository;
 
   Future<void> execute(CreerVenteHiboutikCommand command) async {
-    LoggerService.info('Début de création de vente Hiboutik', 'CreerVenteHiboutikUsecase');
-    LoggerService.debug('UID utilisateur: ${command.uidCompteUtilisateur}', 'CreerVenteHiboutikUsecase');
-    LoggerService.debug('Nombre d\'items: ${command.listeItemsMap.length}', 'CreerVenteHiboutikUsecase');
-    
+    LoggerService.info(
+      'Début de création de vente Hiboutik',
+      'CreerVenteHiboutikUsecase',
+    );
+    LoggerService.debug(
+      'UID utilisateur: ${command.uidCompteUtilisateur}',
+      'CreerVenteHiboutikUsecase',
+    );
+    LoggerService.debug(
+      "Nombre d'items: ${command.listeItemsMap.length}",
+      'CreerVenteHiboutikUsecase',
+    );
+
     final compte = await _compteUtilisateurRepository.recupereCompteUtilisateur(
       uid: command.uidCompteUtilisateur,
     );
-    LoggerService.info('Compte utilisateur récupéré: ${compte.hiboutikEmail}', 'CreerVenteHiboutikUsecase');
-    
+    LoggerService.info(
+      'Compte utilisateur récupéré: ${compte.hiboutikEmail}',
+      'CreerVenteHiboutikUsecase',
+    );
+
     final sale = await _hiboutikRepository.createSale(
       urlHiboutik: compte.urlHiboutik,
       password: compte.hiboutikMotDePasse,
       username: compte.hiboutikEmail,
       vendorId: compte.hiboutikIdVendeur,
     );
-    LoggerService.info('Vente créée avec ID: ${sale.saleId}', 'CreerVenteHiboutikUsecase');
+    LoggerService.info(
+      'Vente créée avec ID: ${sale.saleId}',
+      'CreerVenteHiboutikUsecase',
+    );
 
     for (final item in command.listeItemsMap) {
       final sku = (item['sku'] as String).trim();
       final quantity = item['quantity'] as int;
-      LoggerService.debug('Traitement item - SKU: $sku, Quantité: $quantity', 'CreerVenteHiboutikUsecase');
-      
+      LoggerService.debug(
+        'Traitement item - SKU: $sku, Quantité: $quantity',
+        'CreerVenteHiboutikUsecase',
+      );
+
       final products = await _hiboutikRepository.getProducts(
         urlHiboutik: compte.urlHiboutik,
         password: compte.hiboutikMotDePasse,
@@ -47,12 +65,18 @@ class CreerVenteHiboutikUsecase {
 
       // Correction de la logique : on continue seulement si on trouve des produits
       if (products.isEmpty) {
-        LoggerService.warning('Aucun produit trouvé pour le SKU: $sku', 'CreerVenteHiboutikUsecase');
+        LoggerService.warning(
+          'Aucun produit trouvé pour le SKU: $sku',
+          'CreerVenteHiboutikUsecase',
+        );
         continue;
       }
 
       final product = products.first;
-      LoggerService.debug('Produit trouvé - ID: ${product.productId}, Modèle: ${product.productModel}', 'CreerVenteHiboutikUsecase');
+      LoggerService.debug(
+        'Produit trouvé - ID: ${product.productId}, Modèle: ${product.productModel}',
+        'CreerVenteHiboutikUsecase',
+      );
 
       await _hiboutikRepository.ajouteProduitALaVente(
         urlHiboutik: compte.urlHiboutik,
@@ -64,10 +88,16 @@ class CreerVenteHiboutikUsecase {
         quantity: quantity.toString(),
         sizeId: product.productBarcode,
       );
-      LoggerService.info('Produit ajouté à la vente - SKU: $sku, Quantité: $quantity', 'CreerVenteHiboutikUsecase');
+      LoggerService.info(
+        'Produit ajouté à la vente - SKU: $sku, Quantité: $quantity',
+        'CreerVenteHiboutikUsecase',
+      );
     }
-    
-    LoggerService.info('Création de vente Hiboutik terminée avec succès', 'CreerVenteHiboutikUsecase');
+
+    LoggerService.info(
+      'Création de vente Hiboutik terminée avec succès',
+      'CreerVenteHiboutikUsecase',
+    );
   }
 }
 
