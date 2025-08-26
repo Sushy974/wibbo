@@ -6,6 +6,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:form_inputs/form_inputs.dart';
 import 'package:formz/formz.dart';
 import 'package:text_theme/text_theme.dart';
+import 'package:wibbo_web/app/bloc/app_bloc.dart';
 import 'package:wibbo_web/app/theme/theme.dart';
 import 'package:wibbo_web/l10n/l10n.dart';
 import 'package:wibbo_web/pages/connexion/bloc/connexion_bloc.dart';
@@ -217,31 +218,14 @@ class ConnexionView extends StatelessWidget {
                                       child: AuroraTheme.auroraGradientButton(
                                         text: 'Inscription',
                                         onPressed: () {
-                                          // Navigation vers l'inscription
+                                          context.read<AppBloc>().add(
+                                            const AppAuthenticationNavigationChanged(
+                                              authenticationNavigation:
+                                                  AuthenticationNavigation
+                                                      .pageInscription,
+                                            ),
+                                          );
                                         },
-                                      ),
-                                    ),
-                                  ],
-                                ),
-
-                                const SizedBox(height: 30),
-
-                                // Boutons de téléchargement
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: AuroraTheme.auroraDownloadButton(
-                                        text: 'Google Play',
-                                        icon: Icons.android,
-                                        onPressed: () {},
-                                      ),
-                                    ),
-                                    const SizedBox(width: 15),
-                                    Expanded(
-                                      child: AuroraTheme.auroraDownloadButton(
-                                        text: 'App Store',
-                                        icon: Icons.apple,
-                                        onPressed: () {},
                                       ),
                                     ),
                                   ],

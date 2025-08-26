@@ -8,7 +8,7 @@ List<Page<dynamic>> onGenerateAppDestinationViewPages(
   AppState state,
   List<Page<dynamic>> pages,
 ) {
-  if (state.user.isEmpty) {
+  if (state.user.id.isEmpty) {
     if (state.authenticationNavigation.isPageConnexion) {
       return [
         ConnexionPage.page(),

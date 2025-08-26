@@ -7,6 +7,16 @@ class InscriptionState extends Equatable {
     this.confirmationMotDePasse = const MotDePasseInput.pure(),
     this.motDePasseVisible = false,
     this.confirmationMotDePasseVisible = false,
+    // Nouveaux champs pour Hiboutik
+    this.hiboutikEmail = const EmailInput.pure(),
+    this.hiboutikIdVendeur = const TextInput.pure(),
+    this.hiboutikMotDePasse = const MotDePasseInput.pure(),
+    this.hiboutikMotDePasseVisible = false,
+    this.urlHiboutik = const TextInput.pure(),
+    // Nouveaux champs pour Wix
+    this.urlWix = const TextInput.pure(),
+    this.wixApiKey = const TextInput.pure(),
+    this.wixSiteId = const TextInput.pure(),
     this.status = FormzSubmissionStatus.initial,
     this.exception,
   });
@@ -16,6 +26,16 @@ class InscriptionState extends Equatable {
   final MotDePasseInput confirmationMotDePasse;
   final bool motDePasseVisible;
   final bool confirmationMotDePasseVisible;
+  // Nouveaux champs pour Hiboutik
+  final EmailInput hiboutikEmail;
+  final TextInput hiboutikIdVendeur;
+  final MotDePasseInput hiboutikMotDePasse;
+  final bool hiboutikMotDePasseVisible;
+  final TextInput urlHiboutik;
+  // Nouveaux champs pour Wix
+  final TextInput urlWix;
+  final TextInput wixApiKey;
+  final TextInput wixSiteId;
   final FormzSubmissionStatus status;
   final Exception? exception;
 
@@ -25,6 +45,16 @@ class InscriptionState extends Equatable {
     MotDePasseInput? confirmationMotDePasse,
     bool? motDePasseVisible,
     bool? confirmationMotDePasseVisible,
+    // Nouveaux champs pour Hiboutik
+    EmailInput? hiboutikEmail,
+    TextInput? hiboutikIdVendeur,
+    MotDePasseInput? hiboutikMotDePasse,
+    bool? hiboutikMotDePasseVisible,
+    TextInput? urlHiboutik,
+    // Nouveaux champs pour Wix
+    TextInput? urlWix,
+    TextInput? wixApiKey,
+    TextInput? wixSiteId,
     FormzSubmissionStatus? status,
     Exception? exception,
   }) {
@@ -36,6 +66,16 @@ class InscriptionState extends Equatable {
       motDePasseVisible: motDePasseVisible ?? this.motDePasseVisible,
       confirmationMotDePasseVisible:
           confirmationMotDePasseVisible ?? this.confirmationMotDePasseVisible,
+      // Nouveaux champs pour Hiboutik
+      hiboutikEmail: hiboutikEmail ?? this.hiboutikEmail,
+      hiboutikIdVendeur: hiboutikIdVendeur ?? this.hiboutikIdVendeur,
+      hiboutikMotDePasse: hiboutikMotDePasse ?? this.hiboutikMotDePasse,
+      hiboutikMotDePasseVisible: hiboutikMotDePasseVisible ?? this.hiboutikMotDePasseVisible,
+      urlHiboutik: urlHiboutik ?? this.urlHiboutik,
+      // Nouveaux champs pour Wix
+      urlWix: urlWix ?? this.urlWix,
+      wixApiKey: wixApiKey ?? this.wixApiKey,
+      wixSiteId: wixSiteId ?? this.wixSiteId,
       status: status ?? this.status,
       exception: exception,
     );
@@ -48,6 +88,16 @@ class InscriptionState extends Equatable {
     confirmationMotDePasse,
     motDePasseVisible,
     confirmationMotDePasseVisible,
+    // Nouveaux champs pour Hiboutik
+    hiboutikEmail,
+    hiboutikIdVendeur,
+    hiboutikMotDePasse,
+    hiboutikMotDePasseVisible,
+    urlHiboutik,
+    // Nouveaux champs pour Wix
+    urlWix,
+    wixApiKey,
+    wixSiteId,
     status,
     exception,
   ];

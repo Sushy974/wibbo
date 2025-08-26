@@ -25,6 +25,16 @@ class InscriptionBloc extends Bloc<InscriptionEvent, InscriptionState>
     on<InscriptionShowConfirmationMotDePasseChanged>(
       _onShowConfirmationMotDePasseChanged,
     );
+    // Nouveaux gestionnaires pour Hiboutik
+    on<InscriptionHiboutikEmailChanged>(_onHiboutikEmailChanged);
+    on<InscriptionHiboutikIdVendeurChanged>(_onHiboutikIdVendeurChanged);
+    on<InscriptionHiboutikMotDePasseChanged>(_onHiboutikMotDePasseChanged);
+    on<InscriptionShowHiboutikMotDePasseChanged>(_onShowHiboutikMotDePasseChanged);
+    on<InscriptionUrlHiboutikChanged>(_onUrlHiboutikChanged);
+    // Nouveaux gestionnaires pour Wix
+    on<InscriptionUrlWixChanged>(_onUrlWixChanged);
+    on<InscriptionWixApiKeyChanged>(_onWixApiKeyChanged);
+    on<InscriptionWixSiteIdChanged>(_onWixSiteIdChanged);
     on<InscriptionSubmitted>(
       _onSubmitted,
       transformer: droppable(),
@@ -101,6 +111,117 @@ class InscriptionBloc extends Bloc<InscriptionEvent, InscriptionState>
     );
   }
 
+  // Nouveaux gestionnaires pour Hiboutik
+  FutureOr<void> _onHiboutikEmailChanged(
+    InscriptionHiboutikEmailChanged event,
+    Emitter<InscriptionState> emit,
+  ) {
+    if (event.hiboutikEmail == '') {
+      emit(state.copyWith(hiboutikEmail: const EmailInput.pure()));
+    }
+    emit(
+      state.copyWith(
+        hiboutikEmail: EmailInput.dirty(event.hiboutikEmail),
+      ),
+    );
+  }
+
+  FutureOr<void> _onHiboutikIdVendeurChanged(
+    InscriptionHiboutikIdVendeurChanged event,
+    Emitter<InscriptionState> emit,
+  ) {
+    if (event.hiboutikIdVendeur == '') {
+      emit(state.copyWith(hiboutikIdVendeur: const TextInput.pure()));
+    }
+    emit(
+      state.copyWith(
+        hiboutikIdVendeur: TextInput.dirty(event.hiboutikIdVendeur),
+      ),
+    );
+  }
+
+  FutureOr<void> _onHiboutikMotDePasseChanged(
+    InscriptionHiboutikMotDePasseChanged event,
+    Emitter<InscriptionState> emit,
+  ) {
+    if (event.hiboutikMotDePasse == '') {
+      emit(state.copyWith(hiboutikMotDePasse: const MotDePasseInput.pure()));
+    }
+    emit(
+      state.copyWith(
+        hiboutikMotDePasse: MotDePasseInput.dirty(event.hiboutikMotDePasse),
+      ),
+    );
+  }
+
+  FutureOr<void> _onShowHiboutikMotDePasseChanged(
+    InscriptionShowHiboutikMotDePasseChanged event,
+    Emitter<InscriptionState> emit,
+  ) {
+    emit(
+      state.copyWith(
+        hiboutikMotDePasseVisible: !state.hiboutikMotDePasseVisible,
+      ),
+    );
+  }
+
+  FutureOr<void> _onUrlHiboutikChanged(
+    InscriptionUrlHiboutikChanged event,
+    Emitter<InscriptionState> emit,
+  ) {
+    if (event.urlHiboutik == '') {
+      emit(state.copyWith(urlHiboutik: const TextInput.pure()));
+    }
+    emit(
+      state.copyWith(
+        urlHiboutik: TextInput.dirty(event.urlHiboutik),
+      ),
+    );
+  }
+
+  // Nouveaux gestionnaires pour Wix
+  FutureOr<void> _onUrlWixChanged(
+    InscriptionUrlWixChanged event,
+    Emitter<InscriptionState> emit,
+  ) {
+    if (event.urlWix == '') {
+      emit(state.copyWith(urlWix: const TextInput.pure()));
+    }
+    emit(
+      state.copyWith(
+        urlWix: TextInput.dirty(event.urlWix),
+      ),
+    );
+  }
+
+  FutureOr<void> _onWixApiKeyChanged(
+    InscriptionWixApiKeyChanged event,
+    Emitter<InscriptionState> emit,
+  ) {
+    if (event.wixApiKey == '') {
+      emit(state.copyWith(wixApiKey: const TextInput.pure()));
+    }
+    emit(
+      state.copyWith(
+        wixApiKey: TextInput.dirty(event.wixApiKey),
+      ),
+    );
+  }
+
+  FutureOr<void> _onWixSiteIdChanged(
+    InscriptionWixSiteIdChanged event,
+    Emitter<InscriptionState> emit,
+  ) {
+    if (event.wixSiteId == '') {
+      emit(state.copyWith(wixSiteId: const TextInput.pure()));
+    }
+    emit(
+      state.copyWith(
+        wixSiteId: TextInput.dirty(event.wixSiteId),
+      ),
+    );
+  }
+
   FutureOr<void> _onSubmitted(
     InscriptionSubmitted event,
     Emitter<InscriptionState> emit,
@@ -114,13 +235,13 @@ class InscriptionBloc extends Bloc<InscriptionEvent, InscriptionState>
         InscriptionCommande(
           email: state.email.value,
           password: state.motDePasse.value,
-          hiboutikEmail: '',
-          hiboutikIdVendeur: '',
-          hiboutikMotDePasse: '',
-          urlWix: '',
-          wixApiKey: '',
-          wixSiteId: '',
-          urlHiboutik: '',
+          hiboutikEmail: state.hiboutikEmail.value,
+          hiboutikIdVendeur: state.hiboutikIdVendeur.value ?? '',
+          hiboutikMotDePasse: state.hiboutikMotDePasse.value,
+          urlWix: state.urlWix.value ?? '',
+          wixApiKey: state.wixApiKey.value ?? '',
+          wixSiteId: state.wixSiteId.value ?? '',
+          urlHiboutik: state.urlHiboutik.value ?? '',
         ),
       );
     } catch (_) {
@@ -137,5 +258,12 @@ class InscriptionBloc extends Bloc<InscriptionEvent, InscriptionState>
     state.email,
     state.motDePasse,
     state.confirmationMotDePasse,
+    state.hiboutikEmail,
+    state.hiboutikIdVendeur,
+    state.hiboutikMotDePasse,
+    state.urlHiboutik,
+    state.urlWix,
+    state.wixApiKey,
+    state.wixSiteId,
   ];
 }

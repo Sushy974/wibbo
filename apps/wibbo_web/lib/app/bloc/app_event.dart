@@ -12,7 +12,11 @@ final class AppStreamUser extends AppEvent {
 }
 
 final class AppAuthenticationNavigationChanged extends AppEvent {
-  const AppAuthenticationNavigationChanged();
+  const AppAuthenticationNavigationChanged({
+    this.authenticationNavigation,
+  });
+
+  final AuthenticationNavigation? authenticationNavigation;
 }
 
 final class AppUserChanged extends AppEvent {

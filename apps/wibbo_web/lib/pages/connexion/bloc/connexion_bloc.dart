@@ -6,6 +6,7 @@ import 'package:core/core.dart';
 import 'package:equatable/equatable.dart';
 import 'package:form_inputs/form_inputs.dart';
 import 'package:formz/formz.dart';
+import 'package:wibbo_web/app/bloc/app_bloc.dart';
 
 part 'connexion_event.dart';
 part 'connexion_state.dart';
@@ -14,7 +15,9 @@ class ConnexionBloc extends Bloc<ConnexionEvent, ConnexionState>
     with FormzMixin {
   ConnexionBloc({
     required ConnexionUsecase connexionUtilisateurUsecase,
+    required AppBloc appBloc,
   }) : _connexionUtilisateurUsecase = connexionUtilisateurUsecase,
+       _appBloc = appBloc,
        super(const ConnexionState()) {
     on<ConnexionEmailChanged>(_onEmailChanged);
     on<ConnexionMotDePasseChanged>(_onMotDePasseChanged);
@@ -23,9 +26,11 @@ class ConnexionBloc extends Bloc<ConnexionEvent, ConnexionState>
       _onSubmitted,
       transformer: droppable(),
     );
+    on<ConnexionInscription>(_onInscription);
   }
 
   final ConnexionUsecase _connexionUtilisateurUsecase;
+  final AppBloc _appBloc;
 
   FutureOr<void> _onEmailChanged(
     ConnexionEmailChanged event,
@@ -62,6 +67,17 @@ class ConnexionBloc extends Bloc<ConnexionEvent, ConnexionState>
     emit(
       state.copyWith(
         motDePasseVisible: !state.motDePasseVisible,
+      ),
+    );
+  }
+
+  FutureOr<void> _onInscription(
+    ConnexionInscription event,
+    Emitter<ConnexionState> emit,
+  ) {
+    _appBloc.add(
+      const AppAuthenticationNavigationChanged(
+        authenticationNavigation: AuthenticationNavigation.pageInscription,
       ),
     );
   }

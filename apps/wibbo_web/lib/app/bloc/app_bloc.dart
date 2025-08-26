@@ -42,6 +42,14 @@ class AppBloc extends HydratedBloc<AppEvent, AppState> {
     AppAuthenticationNavigationChanged event,
     Emitter<AppState> emit,
   ) {
+    if (event.authenticationNavigation != null) {
+      emit(
+        state.copyWith(
+          authenticationNavigation: event.authenticationNavigation,
+        ),
+      );
+      return null;
+    }
     if (state.user.isEmpty) {
       emit(
         state.copyWith(

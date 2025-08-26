@@ -23,3 +23,7 @@ final class ConnexionShowMotDePasseChanged extends ConnexionEvent {
 final class ConnexionSubmitted extends ConnexionEvent {
   const ConnexionSubmitted();
 }
+
+final class ConnexionInscription extends ConnexionEvent {
+  const ConnexionInscription();
+}

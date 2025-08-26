@@ -30,6 +30,47 @@ final class InscriptionShowConfirmationMotDePasseChanged
   const InscriptionShowConfirmationMotDePasseChanged();
 }
 
+// Nouveaux événements pour Hiboutik
+final class InscriptionHiboutikEmailChanged extends InscriptionEvent {
+  const InscriptionHiboutikEmailChanged(this.hiboutikEmail);
+  final String hiboutikEmail;
+}
+
+final class InscriptionHiboutikIdVendeurChanged extends InscriptionEvent {
+  const InscriptionHiboutikIdVendeurChanged(this.hiboutikIdVendeur);
+  final String hiboutikIdVendeur;
+}
+
+final class InscriptionHiboutikMotDePasseChanged extends InscriptionEvent {
+  const InscriptionHiboutikMotDePasseChanged(this.hiboutikMotDePasse);
+  final String hiboutikMotDePasse;
+}
+
+final class InscriptionShowHiboutikMotDePasseChanged extends InscriptionEvent {
+  const InscriptionShowHiboutikMotDePasseChanged();
+}
+
+final class InscriptionUrlHiboutikChanged extends InscriptionEvent {
+  const InscriptionUrlHiboutikChanged(this.urlHiboutik);
+  final String urlHiboutik;
+}
+
+// Nouveaux événements pour Wix
+final class InscriptionUrlWixChanged extends InscriptionEvent {
+  const InscriptionUrlWixChanged(this.urlWix);
+  final String urlWix;
+}
+
+final class InscriptionWixApiKeyChanged extends InscriptionEvent {
+  const InscriptionWixApiKeyChanged(this.wixApiKey);
+  final String wixApiKey;
+}
+
+final class InscriptionWixSiteIdChanged extends InscriptionEvent {
+  const InscriptionWixSiteIdChanged(this.wixSiteId);
+  final String wixSiteId;
+}
+
 final class InscriptionSubmitted extends InscriptionEvent {
   const InscriptionSubmitted();
 }
