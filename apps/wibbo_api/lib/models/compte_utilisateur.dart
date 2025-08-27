@@ -1,6 +1,8 @@
 // ignore_for_file: public_member_api_docs, avoid_returning_this
 
 import 'package:equatable/equatable.dart';
+import 'package:dart_firebase_admin/firestore.dart';
+import '../extensions.dart';
 
 class CompteUtilisateur extends Equatable {
   const CompteUtilisateur({
@@ -21,13 +23,9 @@ class CompteUtilisateur extends Equatable {
   factory CompteUtilisateur.fromJson(Map<String, dynamic> json) {
     return CompteUtilisateur(
       idCompte: json['idCompte'] as String,
-      dateCreation: DateTime.fromMicrosecondsSinceEpoch(
-        json['dateCreation'] as int,
-      ),
+      dateCreation: (json['dateCreation'] as Timestamp).toDate(),
       dateValiditer: json['dateValiditer'] != null
-          ? DateTime.fromMicrosecondsSinceEpoch(
-              json['dateValiditer'] as int,
-            )
+          ? (json['dateValiditer'] as Timestamp).toDate()
           : null,
       hiboutikEmail: json['hiboutikEmail'] as String,
       hiboutikMotDePasse: json['hiboutikMotDePasse'] as String,

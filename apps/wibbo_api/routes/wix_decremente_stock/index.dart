@@ -91,7 +91,7 @@ Future<Response> _post(RequestContext context) async {
       'Route',
     );
     final usecase = DecrementeStockWixUsecase(
-      wixRepository: WixAPIVThreeRepository(),
+      wixRepository: WixAPIVOneRepository(),
       compteUtilisateurRepository: FirestoreCompteUtilisateurRepository(
         firestore: firestore,
       ),

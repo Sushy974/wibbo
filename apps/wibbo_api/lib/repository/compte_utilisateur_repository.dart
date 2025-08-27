@@ -15,7 +15,7 @@ class FirestoreCompteUtilisateurRepository
   }) : _firestore = firestore;
 
   final Firestore _firestore;
-  final String collectionPath = 'compte_utilisateur';
+  final String collectionPath = 'compte_utilisateurs';
 
   @override
   Future<DateTime> recupereDateDeValiditer({required String uid}) async {

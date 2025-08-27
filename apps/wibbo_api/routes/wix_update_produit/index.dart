@@ -19,7 +19,7 @@ import 'package:wibbo_api/usecase/mise_a_jour_produit_wix_usecase.dart';
 FutureOr<Response> onRequest(RequestContext context) async {
   LoggerService.info('Requête reçue sur /wix_update_produit', 'Route');
   LoggerService.debug('Méthode HTTP: ${context.request.method}', 'Route');
-  
+
   switch (context.request.method) {
     case HttpMethod.get:
     case HttpMethod.post:
@@ -29,49 +29,56 @@ FutureOr<Response> onRequest(RequestContext context) async {
     case HttpMethod.options:
     case HttpMethod.patch:
     case HttpMethod.put:
-      LoggerService.warning('Méthode HTTP non autorisée: ${context.request.method}', 'Route');
+      LoggerService.warning(
+          'Méthode HTTP non autorisée: ${context.request.method}', 'Route');
       return Response(statusCode: HttpStatus.methodNotAllowed);
   }
 }
 
 Future<Response> _post(RequestContext context) async {
   LoggerService.info('Début du traitement POST /wix_update_produit', 'Route');
-  
+
   // Vérification que la requête provient d'Hiboutik
-  final validationError = HiboutikWebhookValidator.validateRequest(context.request);
+  final validationError =
+      HiboutikWebhookValidator.validateRequest(context.request);
   if (validationError != null) {
     LoggerService.warning('Requête rejetée - User-Agent invalide', 'Route');
     return validationError;
   }
-  
+
   final firestore = await context.readAsync<Firestore>();
-  
+
   // Récupération du paramètre utilisateur depuis l'URL
-  final uidCompteUtilisateur = context.request.uri.queryParameters['utilisateur'];
+  final uidCompteUtilisateur =
+      context.request.uri.queryParameters['utilisateur'];
   if (uidCompteUtilisateur == null || uidCompteUtilisateur.isEmpty) {
-    LoggerService.warning('Paramètre utilisateur manquant dans l\'URL', 'Route');
+    LoggerService.warning(
+        'Paramètre utilisateur manquant dans l\'URL', 'Route');
     return Response(
       statusCode: HttpStatus.badRequest,
       body: json.encode({
         'error': 'Paramètre utilisateur manquant',
-        'message': 'Le paramètre utilisateur est requis dans l\'URL (ex: ?utilisateur=uid123)',
+        'message':
+            'Le paramètre utilisateur est requis dans l\'URL (ex: ?utilisateur=uid123)',
       }),
     );
   }
-  LoggerService.debug('UID utilisateur récupéré depuis l\'URL: $uidCompteUtilisateur', 'Route');
+  LoggerService.debug(
+      'UID utilisateur récupéré depuis l\'URL: $uidCompteUtilisateur', 'Route');
 
   try {
     // Log du body brut avant parsing
     final rawBody = await context.request.body();
-    LoggerService.debug('Body brut reçu: ${rawBody.length} caractères', 'Route');
+    LoggerService.debug(
+        'Body brut reçu: ${rawBody.length} caractères', 'Route');
     LoggerService.debug('Body brut contenu: $rawBody', 'Route');
-    
+
     // Utiliser directement le body brut comme query string
     final query = rawBody;
     LoggerService.debug('Query reçue: $query', 'Route');
-    
+
     final jsonReponse = queryToJson(query);
-    
+
     LoggerService.info('Query convertie en JSON avec succès', 'Route');
 
     final productId = (jsonReponse['product_id'] as double).toInt().toString();
@@ -79,9 +86,10 @@ Future<Response> _post(RequestContext context) async {
 
     LoggerService.debug('jsonReponse: $jsonReponse', 'Route');
 
-    LoggerService.info('Exécution du usecase MiseAJourProduitWixUsecase', 'Route');
+    LoggerService.info(
+        'Exécution du usecase MiseAJourProduitWixUsecase', 'Route');
     final usecase = MiseAJourProduitWixUsecase(
-      wixRepository: WixAPIVThreeRepository(),
+      wixRepository: WixAPIVOneRepository(),
       hiboutikRepository: HiboutikApiRepository(httpClient: http.Client()),
       compteUtilisateurRepository: FirestoreCompteUtilisateurRepository(
         firestore: firestore,
@@ -91,7 +99,8 @@ Future<Response> _post(RequestContext context) async {
       productId: productId,
       uidCompteUtilisateur: uidCompteUtilisateur,
     ));
-    LoggerService.info('Usecase MiseAJourProduitWixUsecase exécuté avec succès', 'Route');
+    LoggerService.info(
+        'Usecase MiseAJourProduitWixUsecase exécuté avec succès', 'Route');
 
     LoggerService.info('Réponse de succès envoyée', 'Route');
     return Response(
@@ -99,11 +108,11 @@ Future<Response> _post(RequestContext context) async {
         'success': true,
         'data': jsonReponse,
         'message': 'Mise a jour des produits wix ok',
-      
       }),
     );
   } catch (e) {
-    LoggerService.error('Erreur lors du traitement de la requête', e, null, 'Route');
+    LoggerService.error(
+        'Erreur lors du traitement de la requête', e, null, 'Route');
     return Response(
       statusCode: HttpStatus.internalServerError,
       body: json.encode({

@@ -1,4 +1,4 @@
-// ignore_for_file: public_member_api_docs
+// ignore_for_file: public_member_api_docs, inference_failure_on_collection_literal
 
 import 'dart:convert';
 
@@ -69,7 +69,9 @@ class WixAPIVOneRepository implements WixRepository {
     };
 
     final request = Request(
-        'POST', Uri.parse('$urlWix/products/query?includeHiddenProducts=true'),)
+      'POST',
+      Uri.parse('$urlWix/products/query?includeHiddenProducts=true'),
+    )
       ..headers['Content-Type'] = 'application/json'
       ..headers['wix-site-id'] = siteId
       ..headers['Authorization'] = apiKey
@@ -102,9 +104,11 @@ class WixAPIVOneRepository implements WixRepository {
       );
 
       // Recherche d'abord par le SKU du produit principal
-      var produit = listeProduits.where((produit) => produit.sku?.trim() == sku.trim()).firstOrNull;
-      
-      if(skuVariant == null) {
+      var produit = listeProduits
+          .where((produit) => produit.sku?.trim() == sku.trim())
+          .firstOrNull;
+
+      if (skuVariant == null) {
         return null;
       }
       // Si pas trouvé, rechercher dans les variants des produits
@@ -114,17 +118,17 @@ class WixAPIVOneRepository implements WixRepository {
           'Recherche dans les variants du produit ${produit.sku}',
           'WixAPIRepository',
         );
-          // Vérifier si le produit a des variants
-          if (produit.variants == null || produit.variants!.isEmpty) {
-            return false;
-          }
-          
-          // Chercher dans chaque variant si le SKU correspond
-          return produit.variants!.any((variant) => 
-            variant.variant?.sku?.trim() == skuVariant?.trim(),
-          );
-        }).firstOrNull;
-      
+        // Vérifier si le produit a des variants
+        if (produit.variants == null || produit.variants!.isEmpty) {
+          return false;
+        }
+
+        // Chercher dans chaque variant si le SKU correspond
+        return produit.variants!.any(
+          (variant) => variant.variant?.sku?.trim() == skuVariant?.trim(),
+        );
+      }).firstOrNull;
+
       return produit;
     } else {
       throw Exception(
@@ -402,29 +406,29 @@ class WixAPIVOneRepository implements WixRepository {
   }
 }
 
-
 class WixAPIVThreeRepository implements WixRepository {
   final urlV3 = 'https://www.wixapis.com/stores/v3';
   final urlV2 = 'https://www.wixapis.com/stores/v2';
-
-  Map<String, String> _h(String siteId, String apiKey) => {
-        'Content-Type': 'application/json',
-        'wix-site-id': siteId,
-        'Authorization': apiKey,
-      };
 
   Future<Map<String, dynamic>> _getProductV3({
     required String productId,
     required String siteId,
     required String apiKey,
   }) async {
+    final h = {
+      'Content-Type': 'application/json',
+      'wix-site-id': siteId,
+      'Authorization': apiKey,
+    };
     final req = Request('GET', Uri.parse('$urlV3/products/$productId'))
-      ..headers.addAll(_h(siteId, apiKey));
+      ..headers.addAll(h);
     final res = await Response.fromStream(await Client().send(req));
     if (res.statusCode == 200) {
       return json.decode(res.body) as Map<String, dynamic>;
     }
-    throw Exception('Get product V3: ${res.statusCode}\n${res.headers}\n${res.body}');
+    throw Exception(
+      'Get product V3: ${res.statusCode}\n${res.headers}\n${res.body}',
+    );
   }
 
   Future<Map<String, dynamic>?> _searchProductBySkuV3({
@@ -434,10 +438,17 @@ class WixAPIVThreeRepository implements WixRepository {
   }) async {
     final body = {
       'filter': {'sku': sku},
-      'paging': {'limit': 1}
+      'paging': {'limit': 1},
     };
+    final h = {
+      'Content-Type': 'application/json',
+      'wix-site-id': siteId,
+      'Authorization': apiKey,
+    };
+    print('body: $body');
+    print('h: $h');
     final req = Request('POST', Uri.parse('$urlV3/products/query'))
-      ..headers.addAll(_h(siteId, apiKey))
+      ..headers.addAll(h)
       ..body = jsonEncode(body);
     final res = await Response.fromStream(await Client().send(req));
     if (res.statusCode == 200) {
@@ -446,7 +457,9 @@ class WixAPIVThreeRepository implements WixRepository {
       if (items.isNotEmpty) return items.first as Map<String, dynamic>;
       return null;
     }
-    throw Exception('Query products V3: ${res.statusCode}\n${res.headers}\n${res.body}');
+    throw Exception(
+      'Query products V3: ${res.statusCode}\n${res.headers}\n${res.body}',
+    );
   }
 
   Future<Map<String, dynamic>?> _searchVariantBySkuV3({
@@ -456,10 +469,15 @@ class WixAPIVThreeRepository implements WixRepository {
   }) async {
     final body = {
       'search': {'query': sku},
-      'paging': {'limit': 10}
+      'paging': {'limit': 10},
+    };
+    final h = {
+      'Content-Type': 'application/json',
+      'wix-site-id': siteId,
+      'Authorization': apiKey,
     };
     final req = Request('POST', Uri.parse('$urlV3/variants/search'))
-      ..headers.addAll(_h(siteId, apiKey))
+      ..headers.addAll(h)
       ..body = jsonEncode(body);
     final res = await Response.fromStream(await Client().send(req));
     if (res.statusCode == 200) {
@@ -471,7 +489,9 @@ class WixAPIVThreeRepository implements WixRepository {
       }
       return null;
     }
-    throw Exception('Search variants V3: ${res.statusCode}\n${res.headers}\n${res.body}');
+    throw Exception(
+      'Search variants V3: ${res.statusCode}\n${res.headers}\n${res.body}',
+    );
   }
 
   @override
@@ -481,16 +501,25 @@ class WixAPIVThreeRepository implements WixRepository {
     required String apiKey,
     String? skuVariant,
   }) async {
-    final prod = await _searchProductBySkuV3(sku: sku, siteId: siteId, apiKey: apiKey);
+    final prod =
+        await _searchProductBySkuV3(sku: sku, siteId: siteId, apiKey: apiKey);
     if (prod != null) {
       return WixProduitApiV3.fromJson(prod).toV1Compat();
     }
     if (skuVariant != null) {
-      final variant = await _searchVariantBySkuV3(sku: skuVariant, siteId: siteId, apiKey: apiKey);
+      final variant = await _searchVariantBySkuV3(
+        sku: skuVariant,
+        siteId: siteId,
+        apiKey: apiKey,
+      );
       if (variant != null) {
         final productId = (variant['productId'] ?? '').toString();
         if (productId.isNotEmpty) {
-          final p = await _getProductV3(productId: productId, siteId: siteId, apiKey: apiKey);
+          final p = await _getProductV3(
+            productId: productId,
+            siteId: siteId,
+            apiKey: apiKey,
+          );
           final obj = (p['product'] ?? p) as Map<String, dynamic>;
           return WixProduitApiV3.fromJson(obj).toV1Compat();
         }
@@ -505,7 +534,8 @@ class WixAPIVThreeRepository implements WixRepository {
     required String siteId,
     required String apiKey,
   }) async {
-    final variant = await _searchVariantBySkuV3(sku: sku, siteId: siteId, apiKey: apiKey);
+    final variant =
+        await _searchVariantBySkuV3(sku: sku, siteId: siteId, apiKey: apiKey);
     if (variant == null) return null;
     return WixVarianteApiV3.fromJson(variant).toV1Compat();
   }
@@ -525,14 +555,21 @@ class WixAPIVThreeRepository implements WixRepository {
           'variantId': variantId,
           'decrementBy': quantity,
         }
-      ]
+      ],
+    };
+    final h = {
+      'Content-Type': 'application/json',
+      'wix-site-id': siteId,
+      'Authorization': apiKey,
     };
     final req = Request('POST', Uri.parse('$urlV2/inventoryItems/decrement'))
-      ..headers.addAll(_h(siteId, apiKey))
+      ..headers.addAll(h)
       ..body = jsonEncode(body);
     final res = await Response.fromStream(await Client().send(req));
     if (res.statusCode == 200) return null;
-    throw Exception('Decrement inventory: ${res.statusCode}\n${res.headers}\n${res.body}');
+    throw Exception(
+      'Decrement inventory: ${res.statusCode}\n${res.headers}\n${res.body}',
+    );
   }
 
   @override
@@ -543,8 +580,13 @@ class WixAPIVThreeRepository implements WixRepository {
   }) async {
     final p = WixProduitApiV3.fromV1Compat(produit);
     final body = p.toCreateJson();
+    final h = {
+      'Content-Type': 'application/json',
+      'wix-site-id': siteId,
+      'Authorization': apiKey,
+    };
     final req = Request('POST', Uri.parse('$urlV3/products'))
-      ..headers.addAll(_h(siteId, apiKey))
+      ..headers.addAll(h)
       ..body = jsonEncode(body);
     final res = await Response.fromStream(await Client().send(req));
     if (res.statusCode == 200 || res.statusCode == 201) {
@@ -554,7 +596,9 @@ class WixAPIVThreeRepository implements WixRepository {
       LoggerService.info('Produit V3 créé $id', 'WixAPIVThreeRepository');
       return id;
     }
-    throw Exception('Création produit V3: ${res.statusCode}\n${res.headers}\n${res.body}');
+    throw Exception(
+      'Création produit V3: ${res.statusCode}\n${res.headers}\n${res.body}',
+    );
   }
 
   @override
@@ -563,16 +607,30 @@ class WixAPIVThreeRepository implements WixRepository {
     required String siteId,
     required String apiKey,
   }) async {
-    final current = await _getProductV3(productId: produit.id!, siteId: siteId, apiKey: apiKey);
+    final current = await _getProductV3(
+      productId: produit.id!,
+      siteId: siteId,
+      apiKey: apiKey,
+    );
     final obj = (current['product'] ?? current) as Map<String, dynamic>;
     final rev = obj['revision']?.toString();
     final p = WixProduitApiV3.fromV1Compat(produit).copyWith(revision: rev);
-    final req = Request('PATCH', Uri.parse('$urlV3/products-with-inventory/${produit.id}'))
-      ..headers.addAll(_h(siteId, apiKey))
+    final h = {
+      'Content-Type': 'application/json',
+      'wix-site-id': siteId,
+      'Authorization': apiKey,
+    };
+    final req = Request(
+      'PATCH',
+      Uri.parse('$urlV3/products-with-inventory/${produit.id}'),
+    )
+      ..headers.addAll(h)
       ..body = jsonEncode(p.toUpdateWithInventoryJson());
     final res = await Response.fromStream(await Client().send(req));
     if (res.statusCode == 200) return;
-    throw Exception('Update produit V3: ${res.statusCode}\n${res.headers}\n${res.body}');
+    throw Exception(
+      'Update produit V3: ${res.statusCode}\n${res.headers}\n${res.body}',
+    );
   }
 
   @override
@@ -582,7 +640,11 @@ class WixAPIVThreeRepository implements WixRepository {
     required String siteId,
     required String apiKey,
   }) async {
-    final current = await _getProductV3(productId: productId, siteId: siteId, apiKey: apiKey);
+    final current = await _getProductV3(
+      productId: productId,
+      siteId: siteId,
+      apiKey: apiKey,
+    );
     final obj = (current['product'] ?? current) as Map<String, dynamic>;
     final rev = obj['revision']?.toString();
     final body = {
@@ -590,14 +652,23 @@ class WixAPIVThreeRepository implements WixRepository {
         'id': productId,
         'revision': rev,
         'variants': variants,
-      }
+      },
     };
-    final req = Request('PATCH', Uri.parse('$urlV3/products-with-inventory/$productId'))
-      ..headers.addAll(_h(siteId, apiKey))
-      ..body = jsonEncode(body);
+    final h = {
+      'Content-Type': 'application/json',
+      'wix-site-id': siteId,
+      'Authorization': apiKey,
+    };
+    final req =
+        Request('PATCH', Uri.parse('$urlV3/products-with-inventory/$productId'))
+          ..headers.addAll(h)
+          ..headers.addAll(h)
+          ..body = jsonEncode(body);
     final res = await Response.fromStream(await Client().send(req));
     if (res.statusCode == 200) return;
-    throw Exception('Déclaration variants V3: ${res.statusCode}\n${res.headers}\n${res.body}');
+    throw Exception(
+      'Déclaration variants V3: ${res.statusCode}\n${res.headers}\n${res.body}',
+    );
   }
 
   @override
@@ -606,7 +677,11 @@ class WixAPIVThreeRepository implements WixRepository {
     required String siteId,
     required String apiKey,
   }) async {
-    final current = await _getProductV3(productId: productId, siteId: siteId, apiKey: apiKey);
+    final current = await _getProductV3(
+      productId: productId,
+      siteId: siteId,
+      apiKey: apiKey,
+    );
     final obj = (current['product'] ?? current) as Map<String, dynamic>;
     final rev = obj['revision']?.toString();
     final body = {
@@ -614,14 +689,21 @@ class WixAPIVThreeRepository implements WixRepository {
         'id': productId,
         'revision': rev,
         'variants': [],
-      }
+      },
     };
-    final req = Request('PATCH', Uri.parse('$urlV3/products-with-inventory/$productId'))
-      ..headers.addAll(_h(siteId, apiKey))
-      ..body = jsonEncode(body);
+    final h = {
+      'Content-Type': 'application/json',
+      'wix-site-id': siteId,
+      'Authorization': apiKey,
+    };
+    final req =
+        Request('PATCH', Uri.parse('$urlV3/products-with-inventory/$productId'))
+          ..headers.addAll(h)
+          ..body = jsonEncode(body);
     final res = await Response.fromStream(await Client().send(req));
     if (res.statusCode == 200) return;
-    throw Exception('Suppression variants V3: ${res.statusCode}\n${res.headers}\n${res.body}');
+    throw Exception(
+      'Suppression variants V3: ${res.statusCode}\n${res.headers}\n${res.body}',
+    );
   }
 }
-

@@ -227,12 +227,221 @@ class ProfileView extends StatelessWidget {
                       compte.wixWebHook,
                     ),
                   ]),
+
+                  const SizedBox(height: 32),
+                  _buildTutorialSection(context),
                 ],
               ),
             ),
           ),
         );
       },
+    );
+  }
+
+  Widget _buildTutorialSection(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader("Guide d'utilisation de Wibbo"),
+        Card(
+          elevation: 8,
+          shadowColor: AuroraTheme.primaryGreen.withOpacity(0.3),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Colors.white, AuroraTheme.inputBackground],
+              ),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildTutorialStep(
+                    '1. Configurer Wix',
+                    'Rendez-vous sur votre site Wix. Activez le mode développeur. Dans l\'arborescence, cliquez sur backend puis sur public. Ajoutez un nouvel événement et copiez le code suivant dans un fichier events.js :',
+                    hasCode: true,
+                  ),
+                  const SizedBox(height: 16),
+                  _buildCodeBlock(context),
+                  const SizedBox(height: 20),
+                  _buildTutorialStep(
+                    '2. Remplacer l\'URL',
+                    'Remplacez \$url_fournis_par_wibbo par le webhook Wix disponible dans votre profil Wibbo.',
+                  ),
+                  const SizedBox(height: 20),
+                  _buildTutorialStep(
+                    '3. Configurer Hiboutik',
+                    'Connectez-vous à votre plateforme Hiboutik. Ajoutez un webhook de type sale (vente). Renseignez le webhook Hiboutik fourni dans votre profil Wibbo.',
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTutorialStep(
+    String title,
+    String description, {
+    bool hasCode = false,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AuroraTheme.primaryGreen,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                title.split('.')[0],
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                title,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: AuroraTheme.darkGreen,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text(
+          description,
+          style: const TextStyle(
+            fontSize: 15,
+            color: AuroraTheme.darkGreen,
+            height: 1.4,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCodeBlock(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E1E1E),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: AuroraTheme.primaryGreen.withOpacity(0.3),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 12,
+                height: 12,
+                decoration: const BoxDecoration(
+                  color: Colors.red,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                width: 12,
+                height: 12,
+                decoration: const BoxDecoration(
+                  color: Colors.orange,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                width: 12,
+                height: 12,
+                decoration: const BoxDecoration(
+                  color: Colors.green,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                'events.js',
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: SelectableText(
+                  'import { fetch } from \'wix-fetch\';\n\n'
+                  'export async function wixStores_onOrderPaid(event) {\n'
+                  '  const url = \'\$url_fournis_par_wibbo\';\n\n'
+                  '  const items = (event.lineItems || []).map(li => ({\n'
+                  '    sku: li.sku,\n'
+                  '    quantity: li.quantity,\n'
+                  '    name: li.name,\n'
+                  '    productId: li.productId,\n'
+                  '    variantId: li.variantId\n'
+                  '  }));\n\n'
+                  '  const payload = {\n'
+                  '    orderId: event.orderId,\n'
+                  '    number: event.number,\n'
+                  '    currency: event.currency,\n'
+                  '    items\n'
+                  '  };\n\n'
+                  '  await fetch(url, {\n'
+                  '    method: \'post\',\n'
+                  '    headers: { \'Content-Type\': \'application/json\' },\n'
+                  '    body: JSON.stringify(payload)\n'
+                  '  });\n'
+                  '}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 13,
+                    fontFamily: 'monospace',
+                    height: 1.4,
+                  ),
+                ),
+              ),
+              IconButton(
+                onPressed: () => _copyCodeToClipboard(context),
+                icon: const Icon(
+                  Icons.copy,
+                  color: Colors.white,
+                  size: 20,
+                ),
+                tooltip: 'Copier le code',
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -472,6 +681,44 @@ class ProfileView extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+
+  void _copyCodeToClipboard(BuildContext context) {
+    const code = '''import { fetch } from 'wix-fetch';
+
+export async function wixStores_onOrderPaid(event) {
+  const url = '\$url_fournis_par_wibbo';
+
+  const items = (event.lineItems || []).map(li => ({
+    sku: li.sku,
+    quantity: li.quantity,
+    name: li.name,
+    productId: li.productId,
+    variantId: li.variantId
+  }));
+
+  const payload = {
+    orderId: event.orderId,
+    number: event.number,
+    currency: event.currency,
+    items
+  };
+
+  await fetch(url, {
+    method: 'post',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+}''';
+
+    Clipboard.setData(const ClipboardData(text: code));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Code copié dans le presse-papiers'),
+        backgroundColor: AuroraTheme.primaryGreen,
+        duration: Duration(seconds: 2),
+      ),
     );
   }
 }
