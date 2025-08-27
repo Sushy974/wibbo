@@ -174,3 +174,60 @@ Alternatively, run `flutter run` and code generation will take place automatical
 [very_good_analysis_badge]: https://img.shields.io/badge/style-very_good_analysis-B22C89.svg
 [very_good_analysis_link]: https://pub.dev/packages/very_good_analysis
 [very_good_cli_link]: https://github.com/VeryGoodOpenSource/very_good_cli
+
+
+# Guide d’utilisation de Wibbo
+
+## Étapes d’intégration
+
+### 1. Créer un compte
+Créez un compte Wibbo et complétez les informations demandées dans votre profil.
+
+---
+
+### 2. Configurer Wix
+1. Rendez-vous sur votre site **Wix**.
+2. Activez le **mode développeur**.
+3. Dans l’arborescence, cliquez sur **backend** puis sur **public**.
+4. Ajoutez un **nouvel événement** et copiez le code suivant dans un fichier `events.js` :
+
+```javascript
+import { fetch } from 'wix-fetch';
+
+export async function wixStores_onOrderPaid(event) {
+  const url = '$url_fournis_par_wibbo';
+
+  const items = (event.lineItems || []).map(li => ({
+    sku: li.sku,
+    quantity: li.quantity,
+    name: li.name,
+    productId: li.productId,
+    variantId: li.variantId
+  }));
+
+  const payload = {
+    orderId: event.orderId,
+    number: event.number,
+    currency: event.currency,
+    items
+  };
+
+  await fetch(url, {
+    method: 'post',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+}
+```
+
+---
+
+### 3. Remplacer l’URL
+Remplacez `$url_fournis_par_wibbo` par le **webhook Wix** disponible dans votre profil Wibbo.
+
+---
+
+### 4. Configurer Hiboutik
+1. Connectez-vous à votre plateforme **Hiboutik**.
+2. Ajoutez un webhook de type **sale (vente)**.
+3. Renseignez le **webhook Hiboutik** fourni dans votre profil Wibbo.
