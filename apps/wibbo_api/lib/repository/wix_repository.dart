@@ -4,6 +4,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart';
 import 'package:wibbo_api/models/wix_produit.dart';
+import 'package:wibbo_api/models/wix_produit_v3.dart';
 import 'package:wibbo_api/models/wix_variante.dart';
 import 'package:wibbo_api/services/logger_service.dart';
 
@@ -400,3 +401,227 @@ class WixAPIVOneRepository implements WixRepository {
     }
   }
 }
+
+
+class WixAPIVThreeRepository implements WixRepository {
+  final urlV3 = 'https://www.wixapis.com/stores/v3';
+  final urlV2 = 'https://www.wixapis.com/stores/v2';
+
+  Map<String, String> _h(String siteId, String apiKey) => {
+        'Content-Type': 'application/json',
+        'wix-site-id': siteId,
+        'Authorization': apiKey,
+      };
+
+  Future<Map<String, dynamic>> _getProductV3({
+    required String productId,
+    required String siteId,
+    required String apiKey,
+  }) async {
+    final req = Request('GET', Uri.parse('$urlV3/products/$productId'))
+      ..headers.addAll(_h(siteId, apiKey));
+    final res = await Response.fromStream(await Client().send(req));
+    if (res.statusCode == 200) {
+      return json.decode(res.body) as Map<String, dynamic>;
+    }
+    throw Exception('Get product V3: ${res.statusCode}\n${res.headers}\n${res.body}');
+  }
+
+  Future<Map<String, dynamic>?> _searchProductBySkuV3({
+    required String sku,
+    required String siteId,
+    required String apiKey,
+  }) async {
+    final body = {
+      'filter': {'sku': sku},
+      'paging': {'limit': 1}
+    };
+    final req = Request('POST', Uri.parse('$urlV3/products/query'))
+      ..headers.addAll(_h(siteId, apiKey))
+      ..body = jsonEncode(body);
+    final res = await Response.fromStream(await Client().send(req));
+    if (res.statusCode == 200) {
+      final data = json.decode(res.body) as Map<String, dynamic>;
+      final items = (data['products'] as List?) ?? const [];
+      if (items.isNotEmpty) return items.first as Map<String, dynamic>;
+      return null;
+    }
+    throw Exception('Query products V3: ${res.statusCode}\n${res.headers}\n${res.body}');
+  }
+
+  Future<Map<String, dynamic>?> _searchVariantBySkuV3({
+    required String sku,
+    required String siteId,
+    required String apiKey,
+  }) async {
+    final body = {
+      'search': {'query': sku},
+      'paging': {'limit': 10}
+    };
+    final req = Request('POST', Uri.parse('$urlV3/variants/search'))
+      ..headers.addAll(_h(siteId, apiKey))
+      ..body = jsonEncode(body);
+    final res = await Response.fromStream(await Client().send(req));
+    if (res.statusCode == 200) {
+      final data = json.decode(res.body) as Map<String, dynamic>;
+      final items = (data['variants'] as List?) ?? const [];
+      for (final v in items) {
+        final m = v as Map<String, dynamic>;
+        if ((m['sku'] ?? '').toString().trim() == sku.trim()) return m;
+      }
+      return null;
+    }
+    throw Exception('Search variants V3: ${res.statusCode}\n${res.headers}\n${res.body}');
+  }
+
+  @override
+  Future<WixProduit?> recupereProduitParSku({
+    required String sku,
+    required String siteId,
+    required String apiKey,
+    String? skuVariant,
+  }) async {
+    final prod = await _searchProductBySkuV3(sku: sku, siteId: siteId, apiKey: apiKey);
+    if (prod != null) {
+      return WixProduitApiV3.fromJson(prod).toV1Compat();
+    }
+    if (skuVariant != null) {
+      final variant = await _searchVariantBySkuV3(sku: skuVariant, siteId: siteId, apiKey: apiKey);
+      if (variant != null) {
+        final productId = (variant['productId'] ?? '').toString();
+        if (productId.isNotEmpty) {
+          final p = await _getProductV3(productId: productId, siteId: siteId, apiKey: apiKey);
+          final obj = (p['product'] ?? p) as Map<String, dynamic>;
+          return WixProduitApiV3.fromJson(obj).toV1Compat();
+        }
+      }
+    }
+    return null;
+  }
+
+  @override
+  Future<WixVariante?> recupereVariationParSku({
+    required String sku,
+    required String siteId,
+    required String apiKey,
+  }) async {
+    final variant = await _searchVariantBySkuV3(sku: sku, siteId: siteId, apiKey: apiKey);
+    if (variant == null) return null;
+    return WixVarianteApiV3.fromJson(variant).toV1Compat();
+  }
+
+  @override
+  Future<WixVariante?> decrementeStock({
+    required String productId,
+    required String variantId,
+    required int quantity,
+    required String siteId,
+    required String apiKey,
+  }) async {
+    final body = {
+      'decrementData': [
+        {
+          'productId': productId,
+          'variantId': variantId,
+          'decrementBy': quantity,
+        }
+      ]
+    };
+    final req = Request('POST', Uri.parse('$urlV2/inventoryItems/decrement'))
+      ..headers.addAll(_h(siteId, apiKey))
+      ..body = jsonEncode(body);
+    final res = await Response.fromStream(await Client().send(req));
+    if (res.statusCode == 200) return null;
+    throw Exception('Decrement inventory: ${res.statusCode}\n${res.headers}\n${res.body}');
+  }
+
+  @override
+  Future<String> creerProduit({
+    required WixProduit produit,
+    required String siteId,
+    required String apiKey,
+  }) async {
+    final p = WixProduitApiV3.fromV1Compat(produit);
+    final body = p.toCreateJson();
+    final req = Request('POST', Uri.parse('$urlV3/products'))
+      ..headers.addAll(_h(siteId, apiKey))
+      ..body = jsonEncode(body);
+    final res = await Response.fromStream(await Client().send(req));
+    if (res.statusCode == 200 || res.statusCode == 201) {
+      final data = json.decode(res.body) as Map<String, dynamic>;
+      final created = (data['product'] ?? data) as Map<String, dynamic>;
+      final id = created['id']?.toString() ?? '';
+      LoggerService.info('Produit V3 créé $id', 'WixAPIVThreeRepository');
+      return id;
+    }
+    throw Exception('Création produit V3: ${res.statusCode}\n${res.headers}\n${res.body}');
+  }
+
+  @override
+  Future<void> mettreAJourProduit({
+    required WixProduit produit,
+    required String siteId,
+    required String apiKey,
+  }) async {
+    final current = await _getProductV3(productId: produit.id!, siteId: siteId, apiKey: apiKey);
+    final obj = (current['product'] ?? current) as Map<String, dynamic>;
+    final rev = obj['revision']?.toString();
+    final p = WixProduitApiV3.fromV1Compat(produit).copyWith(revision: rev);
+    final req = Request('PATCH', Uri.parse('$urlV3/products-with-inventory/${produit.id}'))
+      ..headers.addAll(_h(siteId, apiKey))
+      ..body = jsonEncode(p.toUpdateWithInventoryJson());
+    final res = await Response.fromStream(await Client().send(req));
+    if (res.statusCode == 200) return;
+    throw Exception('Update produit V3: ${res.statusCode}\n${res.headers}\n${res.body}');
+  }
+
+  @override
+  Future<void> decalreListeVariants({
+    required List<Map<String, dynamic>> variants,
+    required String productId,
+    required String siteId,
+    required String apiKey,
+  }) async {
+    final current = await _getProductV3(productId: productId, siteId: siteId, apiKey: apiKey);
+    final obj = (current['product'] ?? current) as Map<String, dynamic>;
+    final rev = obj['revision']?.toString();
+    final body = {
+      'product': {
+        'id': productId,
+        'revision': rev,
+        'variants': variants,
+      }
+    };
+    final req = Request('PATCH', Uri.parse('$urlV3/products-with-inventory/$productId'))
+      ..headers.addAll(_h(siteId, apiKey))
+      ..body = jsonEncode(body);
+    final res = await Response.fromStream(await Client().send(req));
+    if (res.statusCode == 200) return;
+    throw Exception('Déclaration variants V3: ${res.statusCode}\n${res.headers}\n${res.body}');
+  }
+
+  @override
+  Future<void> supprimerTousVariants({
+    required String productId,
+    required String siteId,
+    required String apiKey,
+  }) async {
+    final current = await _getProductV3(productId: productId, siteId: siteId, apiKey: apiKey);
+    final obj = (current['product'] ?? current) as Map<String, dynamic>;
+    final rev = obj['revision']?.toString();
+    final body = {
+      'product': {
+        'id': productId,
+        'revision': rev,
+        'variants': [],
+      }
+    };
+    final req = Request('PATCH', Uri.parse('$urlV3/products-with-inventory/$productId'))
+      ..headers.addAll(_h(siteId, apiKey))
+      ..body = jsonEncode(body);
+    final res = await Response.fromStream(await Client().send(req));
+    if (res.statusCode == 200) return;
+    throw Exception('Suppression variants V3: ${res.statusCode}\n${res.headers}\n${res.body}');
+  }
+}
+

@@ -1,0 +1,6 @@
+# melos_managed_dependency_overrides: authentication_repository,cache
+dependency_overrides:
+  authentication_repository:
+    path: ../authentication_repository
+  cache:
+    path: ../cache

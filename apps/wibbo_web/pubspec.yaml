@@ -1,0 +1,47 @@
+name: wibbo_web
+description: Interface web pour la gestion des profils utilisateurs et webhooks Wibbo
+version: 1.0.0+1
+publish_to: none
+
+environment:
+  sdk: ^3.8.0
+
+dependencies:
+  authentication_repository:
+    path: ../../packages/authentication_repository
+  bloc: ^9.0.0
+  bloc_concurrency: ^0.3.0
+  core:
+    path: ../../packages/core
+  equatable: ^2.0.7
+  flutter:
+    sdk: flutter
+  flutter_bloc: ^9.1.1
+  flutter_localizations:
+    sdk: flutter
+  formz: ^0.8.0
+  intl: ^0.20.2
+  form_inputs:
+    path: ../../packages/form_inputs
+  text_theme:
+    path: ../../packages/text_theme
+  flutter_svg: ^2.2.0
+  hydrated_bloc: ^10.1.1
+  flow_builder: ^0.1.0
+  firebase_core: ^3.15.2
+  cloud_firestore: ^5.6.0
+  rxdart: ^0.28.0
+
+dev_dependencies:
+  bloc_test: ^10.0.0
+  flutter_test:
+    sdk: flutter
+  mocktail: ^1.0.4
+  very_good_analysis: ^9.0.0
+
+flutter:
+  generate: true
+  uses-material-design: true
+  assets:
+    - assets/icons/
+    - assets/images/

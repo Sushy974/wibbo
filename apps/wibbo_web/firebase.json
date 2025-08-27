@@ -1,0 +1,1 @@
+{"firestore":{"database":"(default)","location":"eur3","rules":"firestore.rules","indexes":"firestore.indexes.json"},"flutter":{"platforms":{"dart":{"lib/firebase_options.dart":{"projectId":"wibbo-5182c","configurations":{"web":"1:449103680970:web:fb7f8e1e32857f2ea92b33"}}}}}}

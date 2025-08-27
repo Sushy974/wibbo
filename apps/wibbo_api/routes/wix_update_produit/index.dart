@@ -45,8 +45,20 @@ Future<Response> _post(RequestContext context) async {
   }
   
   final firestore = await context.readAsync<Firestore>();
-  const uidCompteUtilisateur = 'cEIyZGLZKo2EtN3GqSz3';
-  LoggerService.debug('UID utilisateur utilisé: $uidCompteUtilisateur', 'Route');
+  
+  // Récupération du paramètre utilisateur depuis l'URL
+  final uidCompteUtilisateur = context.request.uri.queryParameters['utilisateur'];
+  if (uidCompteUtilisateur == null || uidCompteUtilisateur.isEmpty) {
+    LoggerService.warning('Paramètre utilisateur manquant dans l\'URL', 'Route');
+    return Response(
+      statusCode: HttpStatus.badRequest,
+      body: json.encode({
+        'error': 'Paramètre utilisateur manquant',
+        'message': 'Le paramètre utilisateur est requis dans l\'URL (ex: ?utilisateur=uid123)',
+      }),
+    );
+  }
+  LoggerService.debug('UID utilisateur récupéré depuis l\'URL: $uidCompteUtilisateur', 'Route');
 
   try {
     // Log du body brut avant parsing
@@ -69,7 +81,7 @@ Future<Response> _post(RequestContext context) async {
 
     LoggerService.info('Exécution du usecase MiseAJourProduitWixUsecase', 'Route');
     final usecase = MiseAJourProduitWixUsecase(
-      wixRepository: WixAPIVOneRepository(),
+      wixRepository: WixAPIVThreeRepository(),
       hiboutikRepository: HiboutikApiRepository(httpClient: http.Client()),
       compteUtilisateurRepository: FirestoreCompteUtilisateurRepository(
         firestore: firestore,
