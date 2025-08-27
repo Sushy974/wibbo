@@ -26,6 +26,6 @@ List<Page<dynamic>> onGenerateAppDestinationViewPages(
     }
   }
   return [
-    ConnexionPage.page(),
+    ProfilePage.page(),
   ];
 }

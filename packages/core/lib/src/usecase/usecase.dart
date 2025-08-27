@@ -1,2 +1,10 @@
 export 'connexion_usecase.dart';
 export 'inscription_usecase.dart';
+export 'sauvegarde_email_hiboutik_usecase.dart';
+export 'sauvegarde_api_key_hiboutik_usecase.dart';
+export 'sauvegarde_url_hiboutik_usecase.dart';
+export 'sauvegarde_id_vendeur_hiboutik_usecase.dart';
+export 'sauvegarde_url_wix_usecase.dart';
+export 'sauvegarde_site_id_wix_usecase.dart';
+export 'sauvegarde_api_key_wix_usecase.dart';
+export 'verifie_email_disponnible_usecase.dart';

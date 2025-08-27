@@ -29,7 +29,7 @@ class InscriptionView extends StatelessWidget {
               duration: const Duration(seconds: 3),
               backgroundColor: theme.colorScheme.error,
               content: BodyText(
-                'Erreur lors de l\'inscription',
+                "Erreur lors de l'inscription",
                 style: theme.textTheme
                     .body(context)
                     ?.copyWith(
@@ -123,6 +123,26 @@ class InscriptionView extends StatelessWidget {
                                     AutofillHints.newUsername,
                                   ],
                                   textInputAction: TextInputAction.next,
+                                ),
+
+                                BlocBuilder<InscriptionBloc, InscriptionState>(
+                                  buildWhen: (previous, current) =>
+                                      previous.isEmailDisponnible !=
+                                      current.isEmailDisponnible,
+                                  builder: (context, state) {
+                                    if (state.isEmailDisponnible.isPure ||
+                                        state.isEmailDisponnible.isValid) {
+                                      return const SizedBox.shrink();
+                                    }
+                                    return Text(
+                                      'Email déjà utilisé',
+                                      style: theme.textTheme
+                                          .body(context)
+                                          ?.copyWith(
+                                            color: Colors.red,
+                                          ),
+                                    );
+                                  },
                                 ),
 
                                 const SizedBox(height: 20),
@@ -327,7 +347,7 @@ class InscriptionView extends StatelessWidget {
 
                                 // Bouton d'inscription
                                 AuroraTheme.auroraGradientButton(
-                                  text: 'S\'inscrire',
+                                  text: "S'inscrire",
                                   onPressed:
                                       state.status.isNotInProgress &&
                                           bloc.isValid
@@ -337,7 +357,6 @@ class InscriptionView extends StatelessWidget {
                                       : null,
                                   isLoading: state.status.isInProgress,
                                 ),
-
                                 const SizedBox(height: 30),
 
                                 // Lien vers connexion

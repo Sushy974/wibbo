@@ -74,3 +74,7 @@ final class InscriptionWixSiteIdChanged extends InscriptionEvent {
 final class InscriptionSubmitted extends InscriptionEvent {
   const InscriptionSubmitted();
 }
+
+final class InscriptionVerifieEmailDisponnible extends InscriptionEvent {
+  const InscriptionVerifieEmailDisponnible();
+}

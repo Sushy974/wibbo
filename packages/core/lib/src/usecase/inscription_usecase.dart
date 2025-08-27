@@ -22,6 +22,8 @@ class InscriptionUsecase {
           email: commande.email,
           password: commande.password,
         );
+
+    print('user créer : ${userCredential.user?.uid}');
     final compteUtilisateur = CompteUtilisateur(
       idCompte: userCredential.user!.uid,
       email: commande.email,

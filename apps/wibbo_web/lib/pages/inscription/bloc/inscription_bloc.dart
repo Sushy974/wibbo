@@ -6,15 +6,22 @@ import 'package:core/core.dart';
 import 'package:equatable/equatable.dart';
 import 'package:form_inputs/form_inputs.dart';
 import 'package:formz/formz.dart';
+import 'package:rxdart/rxdart.dart';
 
 part 'inscription_event.dart';
 part 'inscription_state.dart';
+
+EventTransformer<Event> debounceTransformer<Event>(Duration duration) {
+  return (events, mapper) => events.debounceTime(duration);
+}
 
 class InscriptionBloc extends Bloc<InscriptionEvent, InscriptionState>
     with FormzMixin {
   InscriptionBloc({
     required InscriptionUsecase inscriptionUtilisateurUsecase,
+    required VerifieEmailDisponnibleUsecase verifieEmailDisponnibleUsecase,
   }) : _inscriptionUtilisateurUsecase = inscriptionUtilisateurUsecase,
+       _verifieEmailDisponnibleUsecase = verifieEmailDisponnibleUsecase,
        super(const InscriptionState()) {
     on<InscriptionEmailChanged>(_onEmailChanged);
     on<InscriptionMotDePasseChanged>(_onMotDePasseChanged);
@@ -29,7 +36,9 @@ class InscriptionBloc extends Bloc<InscriptionEvent, InscriptionState>
     on<InscriptionHiboutikEmailChanged>(_onHiboutikEmailChanged);
     on<InscriptionHiboutikIdVendeurChanged>(_onHiboutikIdVendeurChanged);
     on<InscriptionHiboutikMotDePasseChanged>(_onHiboutikMotDePasseChanged);
-    on<InscriptionShowHiboutikMotDePasseChanged>(_onShowHiboutikMotDePasseChanged);
+    on<InscriptionShowHiboutikMotDePasseChanged>(
+      _onShowHiboutikMotDePasseChanged,
+    );
     on<InscriptionUrlHiboutikChanged>(_onUrlHiboutikChanged);
     // Nouveaux gestionnaires pour Wix
     on<InscriptionUrlWixChanged>(_onUrlWixChanged);
@@ -39,9 +48,14 @@ class InscriptionBloc extends Bloc<InscriptionEvent, InscriptionState>
       _onSubmitted,
       transformer: droppable(),
     );
+    on<InscriptionVerifieEmailDisponnible>(
+      _onVerifieEmailDisponnible,
+      //transformer: debounceTransformer(const Duration(milliseconds: 5)),
+    );
   }
 
   final InscriptionUsecase _inscriptionUtilisateurUsecase;
+  final VerifieEmailDisponnibleUsecase _verifieEmailDisponnibleUsecase;
 
   FutureOr<void> _onEmailChanged(
     InscriptionEmailChanged event,
@@ -55,6 +69,8 @@ class InscriptionBloc extends Bloc<InscriptionEvent, InscriptionState>
         email: EmailInput.dirty(event.email),
       ),
     );
+    add(const InscriptionVerifieEmailDisponnible());
+    print('event.email: ${event.email}');
   }
 
   FutureOr<void> _onMotDePasseChanged(
@@ -145,11 +161,11 @@ class InscriptionBloc extends Bloc<InscriptionEvent, InscriptionState>
     Emitter<InscriptionState> emit,
   ) {
     if (event.hiboutikMotDePasse == '') {
-      emit(state.copyWith(hiboutikMotDePasse: const MotDePasseInput.pure()));
+      emit(state.copyWith(hiboutikApiKey: const TextInput.pure()));
     }
     emit(
       state.copyWith(
-        hiboutikMotDePasse: MotDePasseInput.dirty(event.hiboutikMotDePasse),
+        hiboutikApiKey: TextInput.dirty(event.hiboutikMotDePasse),
       ),
     );
   }
@@ -237,7 +253,7 @@ class InscriptionBloc extends Bloc<InscriptionEvent, InscriptionState>
           password: state.motDePasse.value,
           hiboutikEmail: state.hiboutikEmail.value,
           hiboutikIdVendeur: state.hiboutikIdVendeur.value ?? '',
-          hiboutikMotDePasse: state.hiboutikMotDePasse.value,
+          hiboutikMotDePasse: state.hiboutikApiKey.value ?? '',
           urlWix: state.urlWix.value ?? '',
           wixApiKey: state.wixApiKey.value ?? '',
           wixSiteId: state.wixSiteId.value ?? '',
@@ -253,6 +269,19 @@ class InscriptionBloc extends Bloc<InscriptionEvent, InscriptionState>
     }
   }
 
+  FutureOr<void> _onVerifieEmailDisponnible(
+    InscriptionVerifieEmailDisponnible event,
+    Emitter<InscriptionState> emit,
+  ) async {
+    final result = await _verifieEmailDisponnibleUsecase.execute(
+      VerifieEmailDisponnibleCommand(
+        email: state.email.value,
+      ),
+    );
+    print('result: $result');
+    emit(state.copyWith(isEmailDisponnible: BoolValide.dirty(result)));
+  }
+
   @override
   List<FormzInput<dynamic, dynamic>> get inputs => [
     state.email,
@@ -260,10 +289,11 @@ class InscriptionBloc extends Bloc<InscriptionEvent, InscriptionState>
     state.confirmationMotDePasse,
     state.hiboutikEmail,
     state.hiboutikIdVendeur,
-    state.hiboutikMotDePasse,
+    state.hiboutikApiKey,
     state.urlHiboutik,
     state.urlWix,
     state.wixApiKey,
     state.wixSiteId,
+    state.isEmailDisponnible,
   ];
 }

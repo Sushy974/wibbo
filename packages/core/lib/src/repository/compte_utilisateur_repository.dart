@@ -5,6 +5,7 @@ import 'package:core/src/models/compte_utilisateur.dart';
 abstract class CompteUtilisateurRepository {
   Future<CompteUtilisateur?> getCompteUtilisateurParEmail(String email);
   Future<CompteUtilisateur?> getCompteUtilisateurParUid(String uid);
+  Stream<CompteUtilisateur?> getStreamCompteUtilisateurParUid(String uid);
   Future<void> createCompteUtilisateur(CompteUtilisateur compteUtilisateur);
   Future<void> deleteCompteUtilisateur(String email);
   Future<void> updateEmail({
@@ -15,12 +16,16 @@ abstract class CompteUtilisateurRepository {
     required String newEmail,
     required String uid,
   });
-  Future<void> updateHiboutikMotDePasse({
-    required String newMotDePasse,
+  Future<void> updateApiKeyHiboutik({
+    required String newApiKey,
     required String uid,
   });
   Future<void> updateHiboutikIdVendeur({
     required String newIdVendeur,
+    required String uid,
+  });
+  Future<void> updateUrlHiboutik({
+    required String newUrl,
     required String uid,
   });
   Future<void> updateHiboutikWebHook({
@@ -48,8 +53,16 @@ class FirestoreCompteUtilisateurRepository
 
   @override
   Future<CompteUtilisateur?> getCompteUtilisateurParEmail(String email) async {
-    final query = await _firestore.whereEmail(isEqualTo: email).get();
-    return query.docs.firstOrNull?.data;
+    final queryA = await _firestore.get();
+    final docs = queryA.docs;
+    for (var doc in docs) {
+      print('doc: ${doc.data}');
+    }
+
+    final query = await _firestore.reference
+        .where('email', isEqualTo: email)
+        .get();
+    return query.docs.firstOrNull?.data();
   }
 
   @override
@@ -120,8 +133,8 @@ class FirestoreCompteUtilisateurRepository
   }
 
   @override
-  Future<void> updateHiboutikMotDePasse({
-    required String newMotDePasse,
+  Future<void> updateUrlHiboutik({
+    required String newUrl,
     required String uid,
   }) async {
     final query = await _firestore.whereDocumentId(isEqualTo: uid).get();
@@ -129,7 +142,23 @@ class FirestoreCompteUtilisateurRepository
       throw Exception("Le compte utilisateur n'existe pas");
     }
     await query.docs.first.reference.update(
-      hiboutikMotDePasse: newMotDePasse,
+      urlHiboutik: newUrl,
+    );
+  }
+
+  @override
+  Future<void> updateApiKeyHiboutik({
+    required String newApiKey,
+    required String uid,
+  }) async {
+    final query = await _firestore.whereDocumentId(isEqualTo: uid).get();
+    if (query.docs.isEmpty) {
+      print('Le compte utilisateur n\'existe pas');
+      throw Exception("Le compte utilisateur n'existe pas");
+    }
+    print('newApiKey: $newApiKey');
+    await query.docs.first.reference.update(
+      hiboutikMotDePasse: newApiKey,
     );
   }
 
@@ -187,5 +216,15 @@ class FirestoreCompteUtilisateurRepository
     await query.docs.first.reference.update(
       wixSiteId: newSiteId,
     );
+  }
+
+  @override
+  Stream<CompteUtilisateur?> getStreamCompteUtilisateurParUid(String uid) {
+    return _firestore
+        .whereDocumentId(isEqualTo: uid)
+        .snapshots()
+        .map(
+          (snapshot) => snapshot.docs.firstOrNull?.data,
+        );
   }
 }

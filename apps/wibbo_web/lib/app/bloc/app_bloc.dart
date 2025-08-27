@@ -99,5 +99,22 @@ class AppBloc extends HydratedBloc<AppEvent, AppState> {
   Future<void> _onDeconnexion(
     AppDeconnexion event,
     Emitter<AppState> emit,
-  ) async {}
+  ) async {
+    try {
+      await _authenticationRepository.deconnexion();
+      emit(
+        state.copyWith(
+          user: User.empty,
+          authenticationNavigation: AuthenticationNavigation.pageConnexion,
+        ),
+      );
+    } catch (e) {
+      emit(
+        state.copyWith(
+          user: User.empty,
+          authenticationNavigation: AuthenticationNavigation.pageConnexion,
+        ),
+      );
+    }
+  }
 }

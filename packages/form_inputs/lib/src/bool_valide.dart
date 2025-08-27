@@ -17,9 +17,9 @@ extension BoolValideValidationErrorText on BoolValideValidationError {
   String text() {
     switch (this) {
       case BoolValideValidationError.invalid:
-        return '''Le signatureValide n'est pas valide''';
+        return '''Pas valide''';
       case BoolValideValidationError.obligatoire:
-        return '''Le signatureValide est obligatoire''';
+        return '''Est obligatoire''';
     }
   }
 }

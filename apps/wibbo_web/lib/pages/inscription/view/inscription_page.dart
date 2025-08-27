@@ -24,6 +24,10 @@ class InscriptionPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (BuildContext context) => InscriptionBloc(
+        verifieEmailDisponnibleUsecase: VerifieEmailDisponnibleUsecase(
+          compteUtilisateurRepository: context
+              .read<CompteUtilisateurRepository>(),
+        ),
         inscriptionUtilisateurUsecase: InscriptionUsecase(
           authenticationRepository: context.read<AuthenticationRepository>(),
           compteUtilisateurRepository: context
